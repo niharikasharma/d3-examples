@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+</head>
+<body>
+
+  <script type="text/csv" id="cars">
+    Model,Origin,Year,Cylinders,Horsepower,MPG,Weight
+    amc ambassador dpl,US,70,8,190,15,3850
+    chevrolet vega (sw),US,71,4,72,22,2408
+    chevrolet vega,US,72,4,90,20,2408
+    ford pinto runabout,US,72,4,86,21,2226
+    mazda rx2 coupe,Japan,72,3,97,19,2330
+    amc matador (sw),US,72,8,150,15,3892
+    ford pinto (sw),US,72,4,86,22,2395
+    dodge coronet custom,US,73,8,150,15,3777
+    toyota carina,Japan,73,4,88,20,2279
+    chevrolet vega,US,73,4,72,21,2401
+    datsun 610,Japan,73,4,94,22,2379
+    ford pinto,US,73,4,85,19,2310
+    chevrolet chevelle malibu classic,US,74,6,100,16,3781
+    buick century,US,75,6,110,17,3907
+    chevrolet chevelle malibu,US,75,6,105,16,3897
+    plymouth fury,US,75,6,95,18,3785
+    amc matador,US,76,8,120,15.5,3962
+    mercedes-benz 280s,Europe,76,6,120,16.5,3820
+    chevrolet caprice classic,US,77,8,145,17.5,3880
+    chevrolet caprice classic,US,79,8,130,17,3840
+    mercury grand marquis,US,79,8,138,16.5,3955
+    dodge st. regis,US,79,8,135,18.2,3830
+    vw rabbit,Europe,80,4,76,41.5,2144
+    mazda glc,Japan,80,4,65,46.6,2110
+    vw pickup,Europe,82,4,52,44,2130
+</script>
+
+  <script type="text/javascript">
+var data = d3.select('#cars').html().trim();
+  data = d3.csv.parse(data, function (d) {
+    return {
+      model: d.Model,
+      origin: d.Origin,
+      year: +d.Year,
+      cylinders: +d.Cylinders,
+      horsepower: +d.Horsepower,
+      mpg: +d.MPG,
+      weight: +d.Weight
+    };
+  });
+
+// Create the SVG element
+var width = 1250;
+var height = 600;
+
+var svg = d3.select('body')
+  .append('svg')
+  .attr('width', width)
+  .attr('height', height);
+
+// Define the margins
+var margins = {
+  top: 50,
+  right: 100,
+  bottom: 50,
+  left: 230
+};
+var graphWidth = width - margins.right - margins.left;
+var graphHeight = height - margins.top - margins.bottom;
+
+// Make a group for drawing the chart
+var chart = svg.append('g')
+  .attr('transform', 'translate(' + margins.left + ',' + margins.top + ')');
+
+// Create the scales
+var x = d3.scale.linear()
+  .range([0, graphWidth]);
+
+var y = d3.scale.ordinal()
+  .rangeRoundBands([ 0, graphHeight], 0.1);
+
+// Draw the axes
+var xAxis = d3.svg.axis()
+  .scale(x)
+  .orient("top");
+
+var xAxisGroup = chart.append("g")
+  .classed("x axis", true);
+
+var yAxis = d3.svg.axis()
+  .scale(y)
+  .orient("left");
+
+var yAxisGroup = chart.append("g")
+  .classed("y axis", true);
+
+var cars = [];
+
+function addCar(car) {
+  cars.push(car);
+  
+  // Calculate the max weight and car model names
+  var max_weight = d3.max(cars, function(d) {
+    return d.weight;
+  });
+
+  var model_names = cars.map(function(d){
+    return d.model;
+  });
+  
+  var colorScale = d3.scale.linear()
+  .domain([0, d3.max(cars, function(d) {
+    return d.weight;
+  })])
+  .range(["red", "blue"]);
+
+
+  x.domain([0, max_weight]);
+  y.domain(model_names);
+
+  xAxisGroup.transition()
+    .call(xAxis);
+  
+  yAxisGroup.transition()
+    .call(yAxis);
+  
+  // Draw the bars
+  var bars = chart.selectAll('rect.bar')
+                  .data(cars);
+  
+  bars.enter()
+      .append('rect')
+      .attr('class', 'bar')
+      .attr('width', 0);
+
+  bars.exit()
+      .remove();
+
+  bars.transition()
+      .attr('x', 0)
+      .attr('y', function(d) {
+        return y(d.model);
+      })
+      .attr('height', y.rangeBand())
+      .transition()
+      .attr('width', function(d) {
+        return x(d.weight);
+      }); 
+  console.log(cars);
+}
+
+var _int = setInterval(function() {
+  if (cars.length == data.length) {
+    clearInterval(_int);
+  } else {
+    addCar(data[cars.length]);
+  }
+},500);
+
+  </script>
+</body>
+</html>

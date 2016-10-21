@@ -1,0 +1,30 @@
+body {
+  font: 14px sans-serif;
+}
+
+svg {
+  border: 3px solid #BDBDBD;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.bar {
+  fill: #CDDC39;
+  cursor: pointer;
+}
+.bar:hover {
+  fill: #6EA9DA;
+}
+
+.y.axis path {
+  display: none;
+}
+
+.area {
+  fill: steelblue;
+}
